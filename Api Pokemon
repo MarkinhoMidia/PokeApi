@@ -116,6 +116,20 @@
             font-family: 'PokemonFont', Arial, sans-serif;
             /* Aplica a fonte PokemonFont aos nomes dos Pokémon */
         }
+
+        .pokemon-region {
+            margin-top: 5px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+
+        .pokemon-habitat {
+            margin-top: 5px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -132,6 +146,18 @@
     const pesquisar = document.getElementById('pesquisar');
     const btnEnviar = document.getElementById('BotaoEnviar');
     const pokemons = document.getElementById('pokemons');
+
+    const regionMap = {
+        "cave": "Kanto",
+        "forest": "Johto",
+        "grassland": "Hoenn",
+        "mountain": "Sinnoh",
+        "rare": "Unova",
+        "rough-terrain": "Kalos",
+        "sea": "Alola",
+        "urban": "Galar",
+        "waters-edge": "Paldea"
+    };
 
     const fetchPokemon = (value) => {
         const result = fetch(`https://pokeapi.co/api/v2/pokemon/${value}`)
@@ -150,7 +176,6 @@
     const getPokemonName = (pokemon) => {
         return pokemon && pokemon["species"]["name"];
     }
-
 
     const getEvolutionsList = (chain) => {
         const pokemon1 = getFromChain(chain);
@@ -172,6 +197,15 @@
     const fetchPokemonFrontImage = async (value) => {
         const result = await fetchPokemon(value);
         return result["sprites"]["front_default"];
+    }
+
+    const fetchPokemonRegionAndHabitat = async (value) => {
+        const species = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${value}`);
+        const species_json = await species.json();
+        const habitat = species_json["habitat"];
+        const habitatName = habitat ? habitat["name"] : "Desconhecido";
+        const regionName = habitat ? regionMap[habitat["name"]] || "Desconhecido" : "Desconhecido";
+        return { habitatName, regionName };
     }
 
     const showEvolutions = async (event) => {
@@ -198,6 +232,18 @@
                 name.className = 'pokemon-name';
                 name.textContent = evolutions[i];
                 pokemonItem.appendChild(name);
+
+                const { habitatName, regionName } = await fetchPokemonRegionAndHabitat(evolutions[i]);
+
+                const region = document.createElement('div');
+                region.className = 'pokemon-region';
+                region.textContent = `Região: ${regionName}`;
+                pokemonItem.appendChild(region);
+
+                const habitat = document.createElement('div');
+                habitat.className = 'pokemon-habitat';
+                habitat.textContent = `Habitat: ${habitatName}`;
+                pokemonItem.appendChild(habitat);
 
                 pokemonContainer.appendChild(pokemonItem);
             }
